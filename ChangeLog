@@ -1,3 +1,17 @@
+Tue Jan  4 22:18:52 MET 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	track where lock was issued in the code
+
+	logerr and logwarn are autoloaded, need to check something real
+
+	forbid re-lock of a file we already locked
+
+	force $\ to be undef prior to writing the PID to lockfile
+
+	added simple.t and user.t to the MANIFEST
+
 Tue May 12 09:34:55 MET 1998  Raphael_Manfredi <Raphael_Manfredi@grenoble.hp.com>
 . Description:
 

@@ -8,3 +8,5 @@ Manager.pm                The lock manager
 patchlevel.h              Records the current patchlevel
 Simple.pm                 The simple locking scheme
 t/basic.t                 Basic tests
+t/simple.t                Test OO interface
+t/user.t                  Test user-defined settings

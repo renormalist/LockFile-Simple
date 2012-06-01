@@ -6,6 +6,12 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Simple.pm,v $
+;# Revision 0.2.1.1  2000/01/04 21:18:10  ram
+;# patch1: logerr and logwarn are autoloaded, need to check something real
+;# patch1: forbid re-lock of a file we already locked
+;# patch1: force $\ to be undef prior to writing the PID to lockfile
+;# patch1: track where lock was issued in the code
+;#
 ;# Revision 0.2  1999/12/07 20:51:05  ram
 ;# Baseline for 0.2 release.
 ;#
@@ -30,7 +36,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.200';
+$VERSION = '0.201';
 
 my $LOCKER = undef;			# Default locking object
 
@@ -79,11 +85,13 @@ sub make {
 	$self->{'nfs'} = 0;
 	$self->{'stale'} = 0;
 	$self->{'warn'} = 1;
-	$self->{'wfunc'} = defined(&logwarn) ? \&logwarn : \&core_warn;
-	$self->{'efunc'} = defined(&logerr) ?  \&logerr  : \&core_err;
 	$self->{'wmin'} = 15;
 	$self->{'wafter'} = 20;
 	$self->{'autoclean'} = 0;
+
+	# The logxxx routines are autoloaded, so need to check for @EXPORT
+	$self->{'wfunc'} = defined(@Log::Agent::EXPORT) ? \&logwarn : \&core_warn;
+	$self->{'efunc'} = defined(@Log::Agent::EXPORT) ?  \&logerr  : \&core_err;
 
 	$self->{'lock_by_file'} = {};
 	$self->configure(@hlist);		# Will init "manager" if necessary
@@ -171,20 +179,7 @@ sub lock {
 		$self = locker();
 	}
 	my ($file, $format) = @_;		# File to be locked, lock format
-	my $locked = $self->_acs_lock($file, $format, 0);
-	return undef unless $locked;
-
-	#
-	# Create LockFile::Lock object
-	#
-
-	my $lock = LockFile::Lock::Simple->make($self, $file, $format);
-	$self->manager->remember($lock) if $self->autoclean;
-	&{$self->wfunc}("file $file was already locked by ourselves")
-		if exists $self->lock_by_file->{$file};
-	$self->lock_by_file->{$file} = $lock;
-
-	return $lock;
+	return $self->take_lock($file, $format, 0);
 }
 
 #
@@ -204,17 +199,42 @@ sub trylock {
 		$self = locker();
 	}
 	my ($file, $format) = @_;		# File to be locked, lock format
-	my $locked = $self->_acs_lock($file, $format, 1);
+	return $self->take_lock($file, $format, 1);
+}
+
+#
+# ->take_lock
+#
+# Common code for ->lock and ->trylock.
+# Returns a LockFile::Lock object on success, undef on failure.
+#
+sub take_lock {
+	my $self = shift;
+	my ($file, $format, $tryonly) = @_;
+
+	#
+	# If lock was already taken by us, it's an error when $tryonly is 0.
+	# Otherwise, simply fail to get the lock.
+	#
+
+	my $lock = $self->lock_by_file->{$file};
+	if (defined $lock) {
+		my $where = $lock->where;
+		&{$self->efunc}("file $file already locked at $where") unless $tryonly;
+		return undef;
+	}
+
+	my $locked = $self->_acs_lock($file, $format, $tryonly);
 	return undef unless $locked;
 
 	#
 	# Create LockFile::Lock object
 	#
 
-	my $lock = LockFile::Lock::Simple->make($self, $file, $format);
+	my ($package, $filename, $line) = caller(1);
+	$lock = LockFile::Lock::Simple->make($self, $file, $format,
+		$filename, $line);
 	$self->manager->remember($lock) if $self->autoclean;
-	&{$self->wfunc}("file $file was already locked by ourselves")
-		if exists $self->lock_by_file->{$file};
 	$self->lock_by_file->{$file} = $lock;
 
 	return $lock;
@@ -357,6 +377,7 @@ sub _acs_lock {		## private
 
 		# Attempt to create lock
 		if (open(FILE, ">$lockfile")) {
+			local $\ = undef;
 			print FILE "$stamp\n";
 			close FILE;
 			open(FILE, $lockfile);	# Check lock
