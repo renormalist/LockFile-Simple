@@ -1,3 +1,16 @@
+Mon Sep 18 21:56:05 MEST 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	Fixed computation of %F and %D when no '/' in file name.
+	Thanks to Philip Coombes <philip.coombes@aethos.co.uk> for
+	reporting the bug.
+
+	Fixed OO example of lock to emphasize check on returned value.
+	Thanks to Rob McMillin <rlm@pricegrabber.com> for suggesting it.
+
+	Now warns when no lockfile is found during unlocking.
+
 Tue Aug 15 20:41:53 MEST 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
 
 . Description:

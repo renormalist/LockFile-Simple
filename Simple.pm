@@ -6,6 +6,11 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Simple.pm,v $
+;# Revision 0.2.1.5  2000/09/18 19:55:07  ram
+;# patch5: fixed computation of %F and %D when no '/' in file name
+;# patch5: fixed OO example of lock to emphasize check on returned value
+;# patch5: now warns when no lockfile is found during unlocking
+;#
 ;# Revision 0.2.1.4  2000/08/15 18:41:43  ram
 ;# patch4: updated version number, grrr...
 ;#
@@ -48,7 +53,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.204';
+$VERSION = '0.205';
 
 my $LOCKER = undef;			# Default locking object
 
@@ -336,14 +341,14 @@ sub lockfile {
 sub base {
 	my ($file) = @_;
 	my ($base) = $file =~ m|^.*/(.*)|;
-	$base;
+	return ($base eq '') ? $file : $base;
 }
 
 # Return dirname
 sub dir {
 	my ($file) = @_;
 	my ($dir) = $file =~ m|^(.*)/.*|;
-	$dir;
+	return ($dir eq '') ? '.' : $dir;
 }
 
 #
@@ -469,6 +474,8 @@ sub _acs_unlock {	## private
 		} else {
 			&{$self->efunc}("cannot unlock $file: lock not owned");
 		}
+	} else {
+		&{$self->wfunc}("no lockfile found for $file");
 	}
 
 	return $unlocked;				# Did we successfully unlock?
@@ -786,7 +793,8 @@ does not necessarily needs to be kept around. For instance:
 
 or, using OO programming:
 
-    my $lock = $obj->lock('ppp', '/var/run/ppp.%p');
+    my $lock = $obj->lock('ppp', '/var/run/ppp.%p') ||;
+        die "Can't lock for ppp\n";
     <do some work>
     $lock->relase;   # The only method defined for a lock handle
 
