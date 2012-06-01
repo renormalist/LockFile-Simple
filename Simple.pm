@@ -132,8 +132,8 @@ sub make {
 	$self->{'lock_by_file'} = {};
 
 	# The logxxx routines are autoloaded, so need to check for @EXPORT
-	$self->{'wfunc'} = defined(@Log::Agent::EXPORT) ? \&logwarn : \&core_warn;
-	$self->{'efunc'} = defined(@Log::Agent::EXPORT) ?  \&logerr  : \&core_warn;
+	$self->{'wfunc'} = @Log::Agent::EXPORT ? \&logwarn : \&core_warn;
+	$self->{'efunc'} = @Log::Agent::EXPORT ?  \&logerr  : \&core_warn;
 
 	$self->configure(@hlist);		# Will init "manager" if necessary
 	return $self;
