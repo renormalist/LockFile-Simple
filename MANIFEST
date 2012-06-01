@@ -1,0 +1,7 @@
+README                    Read this first
+MANIFEST                  This shipping list
+ChangeLog                 List of changes
+Makefile.PL               Generic Makefile template
+Simple.pm                 The module itself
+patchlevel.h              Records the current patchlevel
+t/basic.t                 Basic tests
