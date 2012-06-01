@@ -1,9 +1,6 @@
-# $Id: Makefile.PL,v 0.2 1999/12/07 20:51:05 ram Exp $
+# $Id: Makefile.PL,v 0.2 1999/12/07 20:51:05 ram Exp ram $
 #
-#  Copyright (c) 1998-1999, Raphael Manfredi
-#  
-#  You may redistribute only under the terms of the Artistic License,
-#  as specified in the README file that comes with the distribution.
+#  @COPYRIGHT@
 #
 # $Log: Makefile.PL,v $
 # Revision 0.2  1999/12/07 20:51:05  ram

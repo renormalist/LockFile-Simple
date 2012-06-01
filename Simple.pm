@@ -1,11 +1,35 @@
 ;# $Id
 ;#
-;#  Copyright (c) 1998-1999, Raphael Manfredi
-;#  
-;#  You may redistribute only under the terms of the Artistic License,
-;#  as specified in the README file that comes with the distribution.
+;#  @COPYRIGHT@
 ;#
 ;# $Log: Simple.pm,v $
+;# Revision 0.4  2007/09/28 19:22:05  jv
+;# Bump version.
+;#
+;# Revision 0.3  2007/09/28 19:19:41  jv
+;# Revision 0.2.1.5  2000/09/18 19:55:07  ram
+;# patch5: fixed computation of %F and %D when no '/' in file name
+;# patch5: fixed OO example of lock to emphasize check on returned value
+;# patch5: now warns when no lockfile is found during unlocking
+;#
+;# Revision 0.2.1.4  2000/08/15 18:41:43  ram
+;# patch4: updated version number, grrr...
+;#
+;# Revision 0.2.1.3  2000/08/15 18:37:37  ram
+;# patch3: fixed non-working "-wfunc => undef" due to misuse of defined()
+;# patch3: check for stale lock while we wait for it
+;# patch3: untaint pid before running kill() for -T scripts
+;#
+;# Revision 0.2.1.2  2000/03/02 22:35:02  ram
+;# patch2: allow "undef" in -efunc and -wfunc to suppress logging
+;# patch2: documented how to force warn() despite Log::Agent being there
+;#
+;# Revision 0.2.1.1  2000/01/04 21:18:10  ram
+;# patch1: logerr and logwarn are autoloaded, need to check something real
+;# patch1: forbid re-lock of a file we already locked
+;# patch1: force $\ to be undef prior to writing the PID to lockfile
+;# patch1: track where lock was issued in the code
+;#
 ;# Revision 0.2.1.5  2000/09/18 19:55:07  ram
 ;# patch5: fixed computation of %F and %D when no '/' in file name
 ;# patch5: fixed OO example of lock to emphasize check on returned value
@@ -53,7 +77,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.205';
+$VERSION = '0.206';
 
 my $LOCKER = undef;			# Default locking object
 
@@ -547,6 +571,7 @@ sub _acs_stale {
 		$hostname = " on $hostname";
 	} else {
 		($pid) = $stamp =~ /^(\d+)$/;		# Untaint $pid for kill()
+		$hostname = '';
 		return if kill 0, $pid;
 	}
 

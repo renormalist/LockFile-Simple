@@ -1,11 +1,11 @@
 ;# $Id
 ;#
-;#  Copyright (c) 1998-1999, Raphael Manfredi
-;#  
-;#  You may redistribute only under the terms of the Artistic License,
-;#  as specified in the README file that comes with the distribution.
+;#  @COPYRIGHT@
 ;#
 ;# $Log: Lock.pm,v $
+;# Revision 0.3  2007/09/28 19:20:14  jv
+;# Track where lock was issued in the code.
+;#
 ;# Revision 0.2.1.1  2000/01/04 21:16:28  ram
 ;# patch1: track where lock was issued in the code
 ;#
