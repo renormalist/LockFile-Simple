@@ -6,6 +6,10 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Simple.pm,v $
+;# Revision 0.2.1.2  2000/03/02 22:35:02  ram
+;# patch2: allow "undef" in -efunc and -wfunc to suppress logging
+;# patch2: documented how to force warn() despite Log::Agent being there
+;#
 ;# Revision 0.2.1.1  2000/01/04 21:18:10  ram
 ;# patch1: logerr and logwarn are autoloaded, need to check something real
 ;# patch1: forbid re-lock of a file we already locked
@@ -36,7 +40,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.201';
+$VERSION = '0.202';
 
 my $LOCKER = undef;			# Default locking object
 
@@ -91,7 +95,7 @@ sub make {
 
 	# The logxxx routines are autoloaded, so need to check for @EXPORT
 	$self->{'wfunc'} = defined(@Log::Agent::EXPORT) ? \&logwarn : \&core_warn;
-	$self->{'efunc'} = defined(@Log::Agent::EXPORT) ?  \&logerr  : \&core_err;
+	$self->{'efunc'} = defined(@Log::Agent::EXPORT) ?  \&logerr  : \&core_warn;
 
 	$self->{'lock_by_file'} = {};
 	$self->configure(@hlist);		# Will init "manager" if necessary
@@ -127,6 +131,9 @@ sub configure {
 		$self->{$attr} = $hlist{"-$attr"} if defined $hlist{"-$attr"};
 	}
 
+	$self->{'wfunc'} = \&no_warn unless defined $self->{'wfunc'};
+	$self->{'efunc'} = \&no_warn unless defined $self->{'efunc'};
+
 	if ($self->autoclean) {
 		require LockFile::Manager;
 		# Created via "once" function
@@ -160,7 +167,7 @@ sub manager			{ $_[0]->{'manager'} }
 #
 
 sub core_warn	{ CORE::warn(@_) }
-sub core_err	{ CORE::warn(@_) }
+sub no_warn		{ return }
 
 #
 # ->lock
@@ -624,7 +631,10 @@ to be already locked. Default is 2 seconds.
 
 A function pointer to dereference when an error is to be reported. By default,
 it redirects to the logerr() routine if you have Log::Agent installed,
-to Perl's C<warn()> function otherwise.
+to Perl's warn() function otherwise.
+
+You may set it explicitely to C<\&LockFile::Simple::core_warn> to force the
+use of Perl's warn() function, or to C<undef> to suppress logging.
 
 =item I<ext>
 
@@ -690,7 +700,10 @@ A boolean flag, true by default. To suppress any warning, set it to false.
 
 A function pointer to dereference when a warning is to be issued. By default,
 it redirects to the logwarn() routine if you have Log::Agent installed,
-to Perl's C<warn()> function otherwise.
+to Perl's warn() function otherwise.
+
+You may set it explicitely to C<\&LockFile::Simple::core_warn> to force the
+use of Perl's warn() function, or to C<undef> to suppress logging.
 
 =item I<wmin>
 

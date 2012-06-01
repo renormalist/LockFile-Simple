@@ -1,3 +1,11 @@
+Thu Mar  2 23:35:15 MET 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	Allow "undef" in -efunc and -wfunc to suppress logging.
+
+	Documented how to force warn() despite Log::Agent being there.
+
 Tue Jan  4 22:18:52 MET 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
 
 . Description:
