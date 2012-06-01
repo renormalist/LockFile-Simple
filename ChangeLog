@@ -1,3 +1,21 @@
+Tue Aug 15 20:41:53 MEST 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	Updated version number, grrr...
+
+Tue Aug 15 20:40:49 MEST 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	Fixed non-working "-wfunc => undef" due to misuse of defined().
+	Many thanks to David Coppit <david@coppit.org> for spotting it
+	and providing the right fix.
+
+	Check for stale lock while we wait for it.
+
+	Untaint pid before running kill() for -T scripts.
+
 Thu Mar  2 23:35:15 MET 2000   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
 
 . Description:

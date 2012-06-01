@@ -6,6 +6,14 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Simple.pm,v $
+;# Revision 0.2.1.4  2000/08/15 18:41:43  ram
+;# patch4: updated version number, grrr...
+;#
+;# Revision 0.2.1.3  2000/08/15 18:37:37  ram
+;# patch3: fixed non-working "-wfunc => undef" due to misuse of defined()
+;# patch3: check for stale lock while we wait for it
+;# patch3: untaint pid before running kill() for -T scripts
+;#
 ;# Revision 0.2.1.2  2000/03/02 22:35:02  ram
 ;# patch2: allow "undef" in -efunc and -wfunc to suppress logging
 ;# patch2: documented how to force warn() despite Log::Agent being there
@@ -40,7 +48,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.202';
+$VERSION = '0.204';
 
 my $LOCKER = undef;			# Default locking object
 
@@ -92,12 +100,12 @@ sub make {
 	$self->{'wmin'} = 15;
 	$self->{'wafter'} = 20;
 	$self->{'autoclean'} = 0;
+	$self->{'lock_by_file'} = {};
 
 	# The logxxx routines are autoloaded, so need to check for @EXPORT
 	$self->{'wfunc'} = defined(@Log::Agent::EXPORT) ? \&logwarn : \&core_warn;
 	$self->{'efunc'} = defined(@Log::Agent::EXPORT) ?  \&logerr  : \&core_warn;
 
-	$self->{'lock_by_file'} = {};
 	$self->configure(@hlist);		# Will init "manager" if necessary
 	return $self;
 }
@@ -128,7 +136,7 @@ sub configure {
 	);
 
 	foreach my $attr (@known) {
-		$self->{$attr} = $hlist{"-$attr"} if defined $hlist{"-$attr"};
+		$self->{$attr} = $hlist{"-$attr"} if exists $hlist{"-$attr"};
 	}
 
 	$self->{'wfunc'} = \&no_warn unless defined $self->{'wfunc'};
@@ -415,6 +423,10 @@ sub _acs_lock {		## private
 			&$wfunc("$waiting for $file lock $after $waited second$s");
 			$lastwarn = $waited;
 		}
+
+		# While we wait, existing lockfile may become stale or too old
+		$self->_acs_stale($file, $lockfile) if $self->stale;
+		$self->_acs_check($file, $lockfile) if $self->hold;
 	}
 
 	umask($mask);
@@ -527,7 +539,7 @@ sub _acs_stale {
 		return if kill 0, $pid;
 		$hostname = " on $hostname";
 	} else {
-		$pid = $stamp;
+		($pid) = $stamp =~ /^(\d+)$/;		# Untaint $pid for kill()
 		return if kill 0, $pid;
 	}
 

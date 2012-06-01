@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: simple.t,v 0.2 1999/12/07 20:51:05 ram Exp $
+# $Id: simple.t,v 0.2.1.1 2000/08/15 18:37:45 ram Exp $
 #
 #  Copyright (c) 1998-1999, Raphael Manfredi
 #  
@@ -8,6 +8,9 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: simple.t,v $
+# Revision 0.2.1.1  2000/08/15 18:37:45  ram
+# patch3: forgot to remove "t.mark"
+#
 # Revision 0.2  1999/12/07 20:51:05  ram
 # Baseline for 0.2 release.
 #
@@ -67,3 +70,4 @@ wait;
 print "not " unless -r 't.mark';
 print "ok 6\n";
 
+unlink 't.mark';
