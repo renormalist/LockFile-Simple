@@ -77,7 +77,7 @@ eval "use Log::Agent";
 @ISA = qw(Exporter);
 @EXPORT = ();
 @EXPORT_OK = qw(lock trylock unlock);
-$VERSION = '0.207';
+$VERSION = '0.208';
 
 my $LOCKER = undef;			# Default locking object
 

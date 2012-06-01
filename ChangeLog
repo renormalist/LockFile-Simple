@@ -1,3 +1,7 @@
+2012-06-01  Steffen Schwigon  <ss5@renormalist.net>
+
+	Fix deprecated defined(@array) for Perl 5.16
+
 Fri Sep 28 21:20:57 CEST 2007   Johan Vromans <jv@span.org>
 
 	Changed LICENSE to include GPL.
