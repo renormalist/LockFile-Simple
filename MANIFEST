@@ -1,7 +1,10 @@
 README                    Read this first
 MANIFEST                  This shipping list
 ChangeLog                 List of changes
+Lock.pm                   A lock object, deferred class
+Lock/Simple.pm            A simple lock instance
 Makefile.PL               Generic Makefile template
-Simple.pm                 The module itself
+Manager.pm                The lock manager
 patchlevel.h              Records the current patchlevel
+Simple.pm                 The simple locking scheme
 t/basic.t                 Basic tests
